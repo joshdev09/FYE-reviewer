@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big History - Thresholds 1-8 Quiz</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f2f2f2;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .container {
+    background-color: white;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header {
+    background-color: #46178f; /* Kahoot Purple */
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .header h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+
+  .progress-bar {
+    height: 10px;
+    background-color: #e0e0e0;
+    width: 100%;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background-color: #ffc000; /* Kahoot Yellow */
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .question-box {
+    padding: 30px 20px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding: 20px;
+  }
+
+  .option-btn {
+    border: none;
+    padding: 25px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: transform 0.1s, opacity 0.2s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    /* Prevent text selection */
+    user-select: none; 
+    -webkit-user-select: none;
+  }
+
+  .option-btn:active {
+    transform: translateY(4px);
+    box-shadow: none;
+  }
+
+  /* Kahoot Colors */
+  .opt-0 { background-color: #e21b3c; } /* Red */
+  .opt-1 { background-color: #1368ce; } /* Blue */
+  .opt-2 { background-color: #d89e00; } /* Yellow/Orange */
+  .opt-3 { background-color: #5ebfff; } /* Green */
+
+  /* States */
+  .correct {
+    background-color: #26890c !important;
+    opacity: 1 !important;
+  }
+
+  .incorrect {
+    background-color: #e21b3c !important;
+    opacity: 0.4 !important;
+  }
+
+  .dimmed {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .feedback {
+    text-align: center;
+    padding: 15px;
+    font-weight: bold;
+    font-size: 18px;
+    min-height: 30px;
+    display: none; /* Hidden by default */
+  }
+
+  .feedback.show {
+    display: block;
+  }
+
+  .next-btn {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    border-radius: 30px;
+    cursor: pointer;
+    margin: 0 auto 20px auto;
+    display: none; /* Hidden initially */
+  }
+
+  .score-screen {
+    text-align: center;
+    padding: 50px 20px;
+    display: none;
+  }
+
+  .score-screen h2 {
+    font-size: 32px;
+    color: #46178f;
+  }
+  
+  .score-screen p {
+    font-size: 24px;
+    margin-bottom: 30px;
+  }
+
+  .restart-btn {
+    background-color: #1368ce;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  /* Responsive for mobile */
+  @media (max-width: 500px) {
+    .options-grid {
+      grid-template-columns: 1fr;
+    }
+    .option-btn {
+        padding: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="quiz-container">
+  <div class="header">
+    <h1>Big History Review</h1>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress"></div>
+  </div>
+
+  <div class="question-box" id="question-text">
+    Loading Question...
+  </div>
+
+  <div class="options-grid" id="options-area">
+    </div>
+
+  <div class="feedback" id="feedback-text"></div>
+
+  <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Question</button>
+</div>
+
+<div class="container score-screen" id="score-container">
+  <h2>Quiz Completed!</h2>
+  <p>Your Score: <span id="final-score">0</span> / 50</p>
+  <button class="restart-btn" onclick="location.reload()">Play Again</button>
+</div>
+
+<script>
+  // Questions Data
+  const quizData = [
+    { q: "Approximately how many years ago did Threshold 1, the Big Bang, occur?", o: ["4.5 billion years", "10.2 billion years", "13.2 billion years", "13.8 billion years"], a: 3 },
+    { q: "Before the Big Bang, which of the following existed according to our current understanding?", o: ["Infinite space", "Fundamental matter", "Neither space, time, nor matter", "A slow expansion of energy"], a: 2 },
+    { q: "What is considered the \"New Complexity\" that emerged during Threshold 1?", o: ["The periodic table", "The entire universe, including space-time and energy", "Single-celled organisms", "Rocky planets and moons"], a: 1 },
+    { q: "Which fundamental forces began to govern the universe as a result of the Big Bang?", o: ["Gravity and electromagnetism", "Friction and inertia", "Chemical bonding and nuclear fusion", "Thermal energy and light"], a: 0 },
+    { q: "From what point did the universe expand during the Big Bang?", o: ["A cloud of hydrogen", "A supernova explosion", "A point of infinite density", "The center of a galaxy cluster"], a: 2 },
+    { q: "What was the state of the universe for millions of years after the Big Bang, before stars lit up?", o: ["A cold vacuum", "A dark, hot soup of hydrogen and helium", "A collection of complex elements", "A field of rocky debris"], a: 1 },
+    { q: "Which force pulled atoms together into dense clouds to form the first stars?", o: ["Electromagnetism", "Dark energy", "Gravity", "Nuclear pressure"], a: 2 },
+    { q: "What process marks the moment when \"the stars light up\" in Threshold 2?", o: ["Chemical reaction", "Nuclear fusion", "Gravitational collapse", "Supernova explosion"], a: 1 },
+    { q: "Which of the following is an ingredient for Threshold 2?", o: ["Carbon", "Oxygen", "Hydrogen", "Gold"], a: 2 },
+    { q: "What Goldilocks Condition allowed gravity to pull atoms together into \"hot spots\"?", o: ["Extremely low temperatures", "Tiny variations in the density of matter", "The presence of liquid water", "Massive high-pressure collapses"], a: 1 },
+    { q: "Why are large stars referred to as \"cosmic factories\" in Threshold 3?", o: ["They create energy from nothing", "They produce the first hydrogen atoms", "They create heavier elements like Carbon and Gold", "They pull galaxies together"], a: 2 },
+    { q: "What event occurs when large stars run out of fuel and collapse, creating extreme heat and pressure?", o: ["The Big Bang", "A supernova", "Accretion", "Global warming"], a: 1 },
+    { q: "How many naturally occurring elements are found in the periodic table as a result of Threshold 3?", o: ["13.8", "50", "92", "115"], a: 2 },
+    { q: "Which elements were specifically mentioned as being created during Threshold 3?", o: ["Hydrogen and Helium", "RNA and DNA", "Carbon, Oxygen, and Gold", "Coal and Oil"], a: 2 },
+    { q: "What is the New Complexity for Threshold 3?", o: ["Stars and galaxies", "A periodic table of elements", "Rocky planets", "Single-celled organisms"], a: 1 },
+    { q: "When did Threshold 4, the formation of Earth and the Solar System, occur?", o: ["13.8 billion years ago", "13.2 billion years ago", "4.5 billion years ago", "3.8 billion years ago"], a: 2 },
+    { q: "How did planets form during Threshold 4?", o: ["Through nuclear fusion in the sun", "Debris crashed together", "Gases cooled into liquid", "Large stars exploded into rocky fragments"], a: 1 },
+    { q: "What are the primary ingredients for Threshold 4?", o: ["Hydrogen, Helium, and Gravity", "DNA, RNA, and Water", "Dying stars and High pressure", "New chemical elements, clouds of chemically rich dust, and gravity"], a: 3 },
+    { q: "What Goldilocks Condition is necessary for a planet to allow for liquid water and diverse chemistry?", o: ["Being inside a supernova", "Being in the Habitable Zone of a star", "Having a point of infinite density", "Rapidly cooling to absolute zero"], a: 1 },
+    { q: "Which of the following is part of the New Complexity for Threshold 4?", o: ["The periodic table", "Space-time", "Complex geological systems", "Multi-celled organisms"], a: 2 },
+    { q: "Threshold 5, the emergence of Life on Earth, occurred approximately how many years ago?", o: ["12,000 years ago", "250 million years ago", "3.8 billion years ago", "4.5 billion years ago"], a: 2 },
+    { q: "In Threshold 5, what did chemicals begin to do on a rocky planet with liquid water and energy?", o: ["Collapse into stars", "Self-organize into molecules that can reproduce", "Turn into fossil fuels", "Form the periodic table"], a: 1 },
+    { q: "Which complex chemical compounds are essential ingredients for life in Threshold 5?", o: ["Carbon and Gold", "Hydrogen and Helium", "RNA/DNA", "Steam and Coal"], a: 2 },
+    { q: "What is the New Complexity of Threshold 5?", o: ["Rocky planets and moons", "Single-celled and multi-celled organisms", "Cities and states", "Symbolic language"], a: 1 },
+    { q: "What provides the energy needed for the emergence of life in Threshold 5?", o: ["Nuclear fusion in the Earth's core", "Supernova explosions", "The Sun or volcanic vents", "Fossil fuels"], a: 2 },
+    { q: "How does David Christian describe humans in the context of Threshold 6?", o: ["Biological accidents", "Smart individuals", "A smart collective", "Master of the elements"], a: 2 },
+    { q: "What is the definition of \"Collective Learning\"?", o: ["The ability to hunt in groups", "Sharing, storing, and building knowledge across generations", "Learning how to farm", "The biological evolution of the brain"], a: 1 },
+    { q: "Which gene is associated with the human ability for language?", o: ["RNA", "DNA", "FOXP2", "Mitochondrial Eve"], a: 2 },
+    { q: "According to the archaeological perspective, what serves as \"external storage of knowledge\"?", o: ["Cave paintings and art", "DNA", "Fossil fuels", "The periodic table"], a: 0 },
+    { q: "Why was the discovery of fire critical for human brain growth?", o: ["It provided light for reading", "Cooking food provided more energy for the brain", "It allowed for migration to cold climates", "It was used to forge tools"], a: 1 },
+    { q: "Which migration theory suggests that Homo sapiens evolved in Africa and replaced other human species?", o: ["Multi-Regional Hypothesis", "Out of Africa I", "Recent African Origin (Out of Africa II)", "Austronesian Migration Theory"], a: 2 },
+    { q: "Who proposed the Austronesian Migration Theory?", o: ["David Christian", "René Descartes", "Peter Bellwood", "Mitochondrial Eve"], a: 2 },
+    { q: "What does the Kapampángan term \"Amánung Sísuan\" mean?", o: ["Inherited wisdom", "Nurturing language", "Brave leader", "Communal land"], a: 1 },
+    { q: "What is a key biological factor that led to the need for \"community care\" in human evolution?", o: ["Large brain size and bipedalism", "The ability to cook food", "The development of art", "Migration to Taiwan"], a: 0 },
+    { q: "Which human species is specifically noted for having a brain size of 1,200–1,400 cc?", o: ["Neanderthals", "Homo erectus", "Homo sapiens", "Austronesians"], a: 2 },
+    { q: "When did the Agricultural Revolution begin?", o: ["4.5 billion years ago", "200,000 years ago", "12,000 years ago", "250 years ago"], a: 2 },
+    { q: "What stable climate period served as a Goldilocks Condition for agriculture?", o: ["The Ice Age", "The Holocene", "The Big Bang", "The Industrial Revolution"], a: 1 },
+    { q: "Compared to farming, how is the diet of a forager described?", o: ["Narrow", "Diverse", "Surplus-based", "Grain-heavy"], a: 1 },
+    { q: "What is the main difference between \"taming\" and \"domestication\"?", o: ["Taming is genetic, domestication is behavior", "Taming is for plants, domestication is for animals", "Taming is behavior, domestication is genetic change", "There is no difference"], a: 2 },
+    { q: "Which of the following is a consequence of the Agricultural Revolution?", o: ["Egalitarian societies", "Specialization of labor and social inequality", "Mobile populations", "Decreased disease spread"], a: 1 },
+    { q: "What is the \"Candaba Adze\"?", o: ["A pre-colonial leader", "A 5,000-year-old tool used for farming and boat-making", "A type of sugar mill", "A migration theory"], a: 1 },
+    { q: "In pre-colonial Pampanga, what was the status of the \"Timawa\"?", o: ["Leaders", "Debt-based slaves", "Freemen", "Mill owners"], a: 2 },
+    { q: "Pre-colonial land in Pampanga was typically:", o: ["Privately owned by the Datu", "Owned by the Spanish government", "Communal", "Divided by the sugar mills"], a: 2 },
+    { q: "Which global center of agriculture is associated with the Nile River?", o: ["Mesopotamia", "Egypt", "Indus Valley", "Mesoamerica"], a: 1 },
+    { q: "What economic shift occurred in Pampanga's agricultural history?", o: ["Sugar to Rice", "Rice to Sugar", "Foraging to Hunting", "Farming to Mining"], a: 1 },
+    { q: "What marks the shift in the Industrial Revolution?", o: ["From farming to foraging", "From manual labor to machine-based production", "From symbolic language to writing", "From fossil fuels to wood energy"], a: 1 },
+    { q: "Which Enlightenment thinker emphasized reason and human control over nature?", o: ["David Christian", "Karl Marx", "René Descartes", "Peter Bellwood"], a: 2 },
+    { q: "What were the key energy sources of the Second Industrial Revolution?", o: ["Coal and Steam", "Electricity and Oil", "Computers and Internet", "AI and Automation"], a: 1 },
+    { q: "From a Marxist perspective, who are the \"Bourgeoisie\"?", o: ["Workers and peasants", "Mill owners and landlords", "Leaders like the Datu", "Traveling foragers"], a: 1 },
+    { q: "What is the primary focus of the \"Fifth\" Industrial Revolution?", o: ["Mass production of steel", "Human-centered technology, ethics, and sustainability", "The invention of the steam engine", "Expanding the use of coal and oil"], a: 1 }
+  ];
+
+  let currentQuestionIndex = 0;
+  let score = 0;
+  const questionText = document.getElementById('question-text');
+  const optionsArea = document.getElementById('options-area');
+  const feedbackText = document.getElementById('feedback-text');
+  const nextBtn = document.getElementById('next-btn');
+  const progressBar = document.getElementById('progress');
+  const quizContainer = document.getElementById('quiz-container');
+  const scoreContainer = document.getElementById('score-container');
+  const finalScoreDisplay = document.getElementById('final-score');
+
+  function loadQuestion() {
+    const data = quizData[currentQuestionIndex];
+    questionText.innerText = `${currentQuestionIndex + 1}. ${data.q}`;
+    
+    // Clear old buttons
+    optionsArea.innerHTML = '';
+    feedbackText.innerText = '';
+    feedbackText.className = 'feedback';
+    nextBtn.style.display = 'none';
+
+    // Update Progress
+    const progressPercent = ((currentQuestionIndex) / quizData.length) * 100;
+    progressBar.style.width = `${progressPercent}%`;
+
+    // Create Buttons
+    data.o.forEach((option, index) => {
+      const btn = document.createElement('button');
+      btn.innerText = option;
+      btn.className = `option-btn opt-${index}`;
+      btn.onclick = () => checkAnswer(index, data.a);
+      optionsArea.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(selectedIndex, correctIndex) {
+    const buttons = optionsArea.querySelectorAll('button');
+    
+    // Disable all buttons
+    buttons.forEach(btn => btn.disabled = true);
+
+    if (selectedIndex === correctIndex) {
+      // Correct!
+      score++;
+      buttons[selectedIndex].classList.add('correct');
+      feedbackText.innerText = "Correct!";
+      feedbackText.style.color = "#26890c";
+    } else {
+      // Wrong!
+      buttons[selectedIndex].classList.add('incorrect'); // dim the wrong one slightly more or keep it red
+      buttons[correctIndex].classList.add('correct'); // Highlight the right one
+      buttons[correctIndex].style.opacity = "1"; 
+      
+      // Dim others
+      buttons.forEach((btn, idx) => {
+        if (idx !== correctIndex && idx !== selectedIndex) {
+          btn.classList.add('dimmed');
+        }
+      });
+
+      feedbackText.innerText = "Incorrect!";
+      feedbackText.style.color = "#e21b3c";
+    }
+
+    feedbackText.classList.add('show');
+    nextBtn.style.display = 'block';
+  }
+
+  function nextQuestion() {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < quizData.length) {
+      loadQuestion();
+    } else {
+      showScore();
+    }
+  }
+
+  function showScore() {
+    quizContainer.style.display = 'none';
+    scoreContainer.style.display = 'block';
+    finalScoreDisplay.innerText = score;
+  }
+
+  // Initialize
+  loadQuestion();
+
+</script>
+
+</body>
+</html>
